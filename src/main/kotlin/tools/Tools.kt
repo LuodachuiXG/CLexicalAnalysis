@@ -2,31 +2,51 @@ package tools
 
 import enum.WordTypeEnum
 import enum.getBoundaries
+import enum.getKeys
+import enum.getOperators
 
 /**
  * 判断当前字符类型
  * @param isLetterOrNumber 字母或数字
- * @param isSpaceOrSymbols 空格或符号
+ * @param isSpaces 空格
+ * @param isSymbols 字符
  */
 fun Char.type(
     isLetterOrNumber: (Char) -> Unit,
-    isSpaceOrSymbols: (Char) -> Unit
+    isSpaces: (Char) -> Unit,
+    isSymbols: (Char) -> Unit
 ) {
     if (this.isLetterOrDigit()) {
         isLetterOrNumber(this)
-    } else if (this.isWhitespace() || !this.isLetterOrDigit()) {
-        isSpaceOrSymbols(this)
+    } else if (this.isWhitespace()) {
+        isSpaces(this)
+    } else {
+        isSymbols(this)
     }
 }
 
 /**
- * 判断当前字符是否是界符
+ * 判断当前字符串是否是界符
  */
-fun Char.isBoundary(): Boolean {
-    val list = getBoundaries()
-    list.forEach {
+fun String.isBoundary(): Boolean {
+    val list = getBoundaries().match { it.wordType.word == this }
+    return list.isNotEmpty()
+}
 
-    }
+/**
+ * 判断当前字符串是否是操作符
+ */
+fun String.isOperator(): Boolean {
+    val list = getOperators().match { it.wordType.word == this }
+    return list.isNotEmpty()
+}
+
+/**
+ * 判断当前字符串是否是关键字
+ */
+fun String.isKey(): Boolean {
+    val list = getKeys().match { it.wordType.word == this }
+    return list.isNotEmpty()
 }
 
 

@@ -3,4 +3,8 @@ package entity
 /**
  * 单词种别码数据类
  */
-data class WordType(val code: Int, var word: String = "")
+data class WordType(val code: Int, var word: String = "") {
+    override fun toString(): String {
+        return "($code, \"$word\")"
+    }
+}

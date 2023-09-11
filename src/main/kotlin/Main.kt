@@ -1,7 +1,9 @@
 
 import entity.WordType
 import enum.WordTypeEnum
+import enum.workTypeEnumList
 import tools.error
+import tools.isBoundary
 import tools.match
 import tools.type
 import java.io.File
@@ -55,7 +57,7 @@ fun match(lines: List<String>) {
     // 单词解析的结果
     val resultWordType = ArrayList<WordType>()
 
-    // 单词种别码枚举类，用于不停筛选得到最终的单词种别集合
+    // 单词种别码枚举类 List，用于不停筛选得到最终的单词种别集合
     var wordTypeEnums = enumValues<WordTypeEnum>().toList()
 
     // 字符串缓冲区，用于比对单词
@@ -75,13 +77,32 @@ fun match(lines: List<String>) {
                         it.wordType.word.startsWith(buffer)
                     }
                 },
-                isSpaceOrSymbols = {
-                    // 判断单词种别码集合是否还有选项
-                    if (wordTypeEnums.isEmpty()) {
-                        // 集合已经为空，判断一下是否是
+                isSpaces = {
+                    // 当前字符是空格，先判断单词种别码类 List 是否为空
+                    if (wordTypeEnums.isNotEmpty() && wordTypeEnums.size == 1) {
+                        // List 不为空，且有唯一数据，写入解析结果 List
+                        resultWordType.add(wordTypeEnums[0].wordType)
+                        // 清空缓冲区
+                        buffer.setLength(0)
+                    } else if (wordTypeEnums.isEmpty()) {
+                        // List 为空，判断缓冲区内容
+                        when {
+                            // 缓冲区为界符
+                            buffer.toString().isBoundary() -> {
+
+                            }
+                        }
                     }
+
+                },
+                isSymbols = {
+                    // 当前字符是符号
                 }
             )
         }
+    }
+
+    resultWordType.forEach {
+        println(it)
     }
 }

@@ -2,6 +2,9 @@ package enum
 
 import entity.WordType
 
+/**
+ * 将 WordTypeEnum 枚举类存为 List
+ */
 val workTypeEnumList = enumValues<WordTypeEnum>().toList()
 
 /**
