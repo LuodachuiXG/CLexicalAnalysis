@@ -195,6 +195,17 @@ fun match(lines: List<String>) {
                             buffer.clear()
                             // 刷新单词种别码枚举类匹配 List
                             wordTypeEnums = workTypeEnumList
+                        },
+                        isOther = { otherChar ->
+                            // 当前字符是除了字母数字和运算符以及界符外的其他未定义的字符
+
+                            if (buffer.contains("\"") || buffer.contains("'")) {
+                                // 缓冲区中有单双引号，把当前字符认为是字符串直接加入缓冲区
+                                buffer.append(otherChar)
+                            } else {
+                                // 出现了未定义的符号，并且缓冲区没有引号，这里应该报错
+                            }
+
                         }
                     )
                 }
