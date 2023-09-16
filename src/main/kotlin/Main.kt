@@ -1,6 +1,5 @@
 
 import entity.WordType
-import enum.WordTypeEnum
 import enum.getBoundaries
 import enum.getOperators
 import enum.workTypeEnumList
@@ -9,15 +8,15 @@ import java.io.File
 import java.lang.Exception
 
 fun main(args: Array<String>) {
-    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\b.c")
+//    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\b.c")
     // 首先判断是否传入参数
-    if (mArgs.isEmpty()) {
+    if (args.isEmpty()) {
         println("[.c 文件路径]：对 C 进行词法分析")
         return
     }
 
     // 参数是否错误
-    if (mArgs.size > 1) {
+    if (args.size > 1) {
         "参数长度错误".error()
         return
     }
@@ -27,7 +26,7 @@ fun main(args: Array<String>) {
 
     // 验证文件是否存在
     try {
-        file = File(mArgs[0])
+        file = File(args[0])
         if (!file.exists() || !file.isFile) {
             // 文件不存在
             "文件不存在，请检查文件路径".error()
@@ -64,9 +63,9 @@ fun match(lines: List<String>) {
     val buffer = StringBuffer("")
 
     // 按行遍历
-    lines.forEach { line ->
+    lines.forEachIndexed { _, line ->
         // 按字符遍历
-        line.forEach { char ->
+        line.forEachIndexed { _, char ->
             // 判断当前字符类型
             char.type(
                 isLetterOrNumber = {
@@ -154,12 +153,28 @@ fun match(lines: List<String>) {
                                 resultWordType.add(it)
                             }
 
-                            // 根据当前运算符获取到对应的 WordType
-                            val operators = getOperators().match {
-                                it.wordType.word == operator.toString()
+                            // 检查一下当前运算符是否可以和上一个运算符组成双目运算符
+                            val lastChar = resultWordType.last().word
+                            val binaryOperatorMatch = getOperators().match {
+                                it.wordType.word == lastChar + operator
                             }
-                            // 写入解析结果 List
-                            resultWordType.add(operators[0].wordType)
+
+                            if (binaryOperatorMatch.isNotEmpty()) {
+                                // 双目运算符匹配结果不为空，
+                                // 删除上一个运算符，将匹配成功的双目运算符加入结果集
+                                resultWordType.removeLast()
+                                resultWordType.add(binaryOperatorMatch[0].wordType)
+                            } else {
+                                // 匹配失败，正常将匹配到的单目运算符加入结果集
+
+                                // 根据当前运算符获取到对应的 WordType
+                                val operators = getOperators().match {
+                                    it.wordType.word == operator.toString()
+                                }
+                                // 写入解析结果 List
+                                resultWordType.add(operators[0].wordType)
+                            }
+
                             // 清空缓冲区
                             buffer.clear()
                             // 刷新单词种别码枚举类匹配 List

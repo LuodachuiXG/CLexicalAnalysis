@@ -66,9 +66,11 @@ enum class WordTypeEnum(val wordType: WordType) {
     DOUBLE_EQUAL(WordType(215, "==")),
     NOT_EQUAL(WordType(216, "!=")),
     DOUBLE_AND(WordType(217, "&&")),
-    PARALLEL(WordType(218, "||")),
+    DOUBLE_PARALLEL(WordType(218, "||")),
     EQUAL(WordType(219, "=")),
-    POINT(WordType(220, "."));
+    POINT(WordType(220, ".")),
+    PARALLEL(WordType(221, "|")),
+    AND(WordType(222, "&"))
 }
 
 /**
@@ -89,7 +91,7 @@ fun WordTypeEnum.isBoundary(): Boolean {
  * 当前单词种别枚举类是否是运算符
  */
 fun WordTypeEnum.isOperator(): Boolean {
-    return this.wordType.code in (201..220)
+    return this.wordType.code in (201..222)
 }
 
 /**
