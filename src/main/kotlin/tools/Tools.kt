@@ -64,21 +64,19 @@ fun String.getWordType(): WordType? {
 
 /**
  * 判断当前字符符号类型
- * @param isSingleQuote 单引号
- * @param isDoubleQuote 双引号
+ * @param isQuote 是引号（包括单双引号）
  * @param isBoundary 界符
  * @param isOperator 运算符
+ * @param isOther 其他字符
  */
 fun Char.symbolType(
-    isSingleQuote: (Char) -> Unit,
-    isDoubleQuote: (Char) -> Unit,
+    isQuote: (Char) -> Unit,
     isBoundary: (Char) -> Unit,
     isOperator: (Char) -> Unit,
     isOther: (Char) -> Unit = {}
 ) {
     when {
-        this == '\'' -> isSingleQuote(this)
-        this == '"' -> isDoubleQuote(this)
+        this == '\'' || this == '"' -> isQuote(this)
         this.toString().isBoundary() -> isBoundary(this)
         this.toString().isOperator() -> isOperator(this)
         else -> isOther(this)

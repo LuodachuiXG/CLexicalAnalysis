@@ -9,15 +9,15 @@ import java.io.File
 import java.lang.Exception
 
 fun main(args: Array<String>) {
-//    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\b.c")
+    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\b.c")
     // 首先判断是否传入参数
-    if (args.isEmpty()) {
+    if (mArgs.isEmpty()) {
         println("[.c 文件路径]：对 C 进行词法分析")
         return
     }
 
     // 参数是否错误
-    if (args.size > 1) {
+    if (mArgs.size > 1) {
         "参数长度错误".error()
         return
     }
@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
 
     // 验证文件是否存在
     try {
-        file = File(args[0])
+        file = File(mArgs[0])
         if (!file.exists() || !file.isFile) {
             // 文件不存在
             "文件不存在，请检查文件路径".error()
@@ -104,37 +104,17 @@ fun match(lines: List<String>) {
                     // 如果是单双引号也将符号加入到缓冲区，用于后续对字符和字符串进行判断
                     // 前提是缓冲区当前只有一个单双引号，如果有两个将认为字符（串）结束
                     symbol.symbolType(
-                        isSingleQuote = { singleQuote ->
-                            // 缓冲区里单引号数量
-                            val singleQuoteCount = buffer.count { it == singleQuote }
-                            // 缓冲区中单引号数量小于 2
-                            if (singleQuoteCount < 2) {
+                        isQuote = { quote ->
+                            // 缓冲区里单/双引号数量
+                            val quoteCount = buffer.count { it == quote }
+                            // 缓冲区中单/双引号数量小于 2
+                            if (quoteCount < 2) {
                                 // 将当前字符添加到缓冲区
                                 buffer.append(char)
 
-                                if (singleQuoteCount == 1) {
-                                    // 单引号本来只有一个，上面加了一个，现在有两个，构成一个字符
+                                if (quoteCount == 1) {
+                                    // 单/双引号本来只有一个，上面加了一个，现在有两个，构成一个字符/字符串
                                     // 将字符加入结果集
-                                    buffer.toString().getWordType()?.let {
-                                        resultWordType.add(it)
-                                    }
-                                    buffer.clear()
-                                }
-                            }
-
-
-                        },
-                        isDoubleQuote = { doubleQuote ->
-                            // 缓冲区里双引号数量
-                            val doubleQuoteCount = buffer.count { it == doubleQuote }
-                            // 缓冲区中双引号数量小于 2
-                            if (doubleQuoteCount < 2) {
-                                // 将当前字符添加到缓冲区
-                                buffer.append(char)
-
-                                if (doubleQuoteCount == 1) {
-                                    // 双引号本来只有一个，上面加了一个，现在有两个，构成一个字符串
-                                    // 将字符串加入结果集
                                     buffer.toString().getWordType()?.let {
                                         resultWordType.add(it)
                                     }
@@ -191,14 +171,17 @@ fun match(lines: List<String>) {
         }
     }
 
+    // 解析结果
     val resultStr = StringBuffer()
-
     resultWordType.forEach {
         resultStr.append("$it\n")
     }
 
-    println(resultStr)
 
+    // 打印解析结果
+    println("$resultStr\n解析结果已经保存到 ." + File.separator + "analysis_result.txt")
+
+    // 将解析结果输出到文件
     val output = File("." + File.separator + "analysis_result.txt")
     output.createNewFile()
     output.writeText(resultStr.toString())
