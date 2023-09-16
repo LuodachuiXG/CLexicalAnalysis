@@ -122,6 +122,14 @@ fun match(lines: List<String>) {
                             }
                         },
                         isBoundary = { boundary ->
+                            if (buffer.contains("\"") || buffer.contains("'")) {
+                                // 如果缓冲区中有存在单双引号，证明当前的界符可能是字符串形式
+                                // 直接将当前界符加入缓冲区，不做其他处理
+                                buffer.append(boundary)
+                                return@symbolType
+                            }
+
+
                             // 在遇到界符符后先将缓冲区中的字符串比对加入解析结果 List
                             buffer.toString().getWordType()?.let {
                                 resultWordType.add(it)
@@ -140,6 +148,14 @@ fun match(lines: List<String>) {
                             wordTypeEnums = workTypeEnumList
                         },
                         isOperator = { operator ->
+                            if (buffer.contains("\"") || buffer.contains("'")) {
+                                // 如果缓冲区中有存在单双引号，证明当前的运算符可能是字符串形式
+                                // 直接将当前运算符加入缓冲区，不做其他处理
+                                buffer.append(operator)
+                                return@symbolType
+                            }
+
+
                             if (buffer.toString().isInteger() && operator == '.') {
                                 // 当前运算符是点，并且缓冲区中是整型数字
                                 // 证明当前点不是运算符而是小数点
