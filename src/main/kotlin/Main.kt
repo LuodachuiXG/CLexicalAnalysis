@@ -1,5 +1,8 @@
 
+import entity.StringIndex
 import entity.WordType
+import entity.isNotEmpty
+import enum.WordTypeEnum
 import enum.getBoundaries
 import enum.getOperators
 import enum.workTypeEnumList
@@ -8,15 +11,15 @@ import java.io.File
 import java.lang.Exception
 
 fun main(args: Array<String>) {
-//    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\b.c")
+    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\test02.c")
     // 首先判断是否传入参数
-    if (args.isEmpty()) {
+    if (mArgs.isEmpty()) {
         println("[.c 文件路径]：对 C 进行词法分析")
         return
     }
 
     // 参数是否错误
-    if (args.size > 1) {
+    if (mArgs.size > 1) {
         "参数长度错误".error()
         return
     }
@@ -26,7 +29,7 @@ fun main(args: Array<String>) {
 
     // 验证文件是否存在
     try {
-        file = File(args[0])
+        file = File(mArgs[0])
         if (!file.exists() || !file.isFile) {
             // 文件不存在
             "文件不存在，请检查文件路径".error()
@@ -62,10 +65,53 @@ fun match(lines: List<String>) {
     // 字符串缓冲区，用于比对单词
     val buffer = StringBuffer("")
 
+    // 标记斜杠星注释的结束符索引，
+    // 如果行列不为 -1 即当前遇到了斜杠星注释符号，
+    // 需要跳到结束符位置后继续执行词汇分析
+    var slashStarTailIndex = StringIndex()
+
+    // 标记当前是否遇到双斜杠注释
+    // 当该变量为 true 时，跳过当前行
+    var meetDoubleSlashNote = false
+
+
     // 按行遍历
-    lines.forEachIndexed { _, line ->
+    for (lineIndex in lines.indices) {
+        val line = lines[lineIndex]
+
+        if (slashStarTailIndex.isNotEmpty() && lineIndex < slashStarTailIndex.rowIndex) {
+            // 斜杠星注释符结束符索引不为空，跳到结束符所在行后继续执行
+            continue
+        }
+
         // 按字符遍历
-        line.forEachIndexed { _, char ->
+        for (charIndex in line.indices) {
+            val char = line[charIndex]
+
+            if (meetDoubleSlashNote) {
+                // 遇到双斜杠注释，跳过当前行剩下的词法分析
+                meetDoubleSlashNote = false
+                break
+            }
+
+            // 斜杠星注释符结束符索引不为空，跳到结束符后继续执行
+            if (slashStarTailIndex.isNotEmpty()) {
+                if (slashStarTailIndex.columnIndex + 1 == line.lastIndex) {
+                    // 斜杠星注释结束符是当前行最后的字符，直接跳出当前行的分析
+                    // 清除斜杠星注释结束符索引
+                    slashStarTailIndex = StringIndex()
+                    break
+                }
+
+                // 一直检索字符，直到检索到斜杠星注释结束符后一个字符
+                if (charIndex != slashStarTailIndex.columnIndex + 2) {
+                    continue
+                } else {
+                    // 当前位置已经到达斜杠星注释结束符后一个字符，清空斜杠星注释结束符索引
+                    slashStarTailIndex = StringIndex()
+                }
+            }
+
             // 判断当前字符类型
             char.type(
                 isLetterOrNumber = {
@@ -86,7 +132,7 @@ fun match(lines: List<String>) {
                     if (wordTypeEnums.isNotEmpty() &&
                         wordTypeEnums.size == 1 &&
                         wordTypeEnums[0].wordType.word == buffer.toString()) {
-                        // List 不为空，且有唯一数据，且等于缓冲区数据，写入解析结果 List
+                        // List 不为空，且有唯一数据，且等于缓冲区数据，写入结果集
                         resultWordType.add(wordTypeEnums[0].wordType)
                     } else {
                         // List 为空，或匹配长度大于 1，或数据与缓冲区不一致，直接判断缓冲区内容
@@ -130,7 +176,7 @@ fun match(lines: List<String>) {
                             }
 
 
-                            // 在遇到界符符后先将缓冲区中的字符串比对加入解析结果 List
+                            // 在遇到界符符后先将缓冲区中的字符串比对加入结果集
                             buffer.toString().getWordType()?.let {
                                 resultWordType.add(it)
                             }
@@ -139,7 +185,7 @@ fun match(lines: List<String>) {
                             val boundaries = getBoundaries().match {
                                 it.wordType.word == boundary.toString()
                             }
-                            // 写入解析结果 List
+                            // 写入结果集
                             resultWordType.add(boundaries[0].wordType)
 
                             // 清空缓冲区
@@ -164,32 +210,55 @@ fun match(lines: List<String>) {
                                 return@symbolType
                             }
 
-                            // 在遇到运算符后先将缓冲区中的字符串比对加入解析结果 List
+                            // 在遇到运算符后先将缓冲区中的字符串比对加入结果集
                             buffer.toString().getWordType()?.let {
                                 resultWordType.add(it)
                             }
 
                             // 检查一下当前运算符是否可以和上一个运算符组成双目运算符
-                            val lastChar = resultWordType.last().word
-                            val binaryOperatorMatch = getOperators().match {
-                                it.wordType.word == lastChar + operator
-                            }
-
-                            if (binaryOperatorMatch.isNotEmpty()) {
-                                // 双目运算符匹配结果不为空，
-                                // 删除上一个运算符，将匹配成功的双目运算符加入结果集
-                                resultWordType.removeLast()
-                                resultWordType.add(binaryOperatorMatch[0].wordType)
-                            } else {
-                                // 匹配失败，正常将匹配到的单目运算符加入结果集
-
-                                // 根据当前运算符获取到对应的 WordType
-                                val operators = getOperators().match {
-                                    it.wordType.word == operator.toString()
+                            // 这里的判断上一个运算符不为空，意思是防止上一个就是空字符串，
+                            // 但是和当前的运算符组合成空字符串 + 运算符的格式，这样可能得到意外的双目运算符匹配结果。
+                            if (resultWordType.isNotEmpty() && resultWordType.last().word.isNotEmpty()) {
+                                val lastChar = resultWordType.last().word
+                                val binaryOperatorMatch = getOperators().match {
+                                    it.wordType.word == lastChar + operator
                                 }
-                                // 写入解析结果 List
-                                resultWordType.add(operators[0].wordType)
+
+                                if (binaryOperatorMatch.isNotEmpty()) {
+                                    // 双目运算符匹配结果不为空，删除上一个运算符
+                                    resultWordType.removeLast()
+
+                                    if (binaryOperatorMatch[0] == WordTypeEnum.SLASH_STAR) {
+                                        // 当前 ”双目运算符“ 是斜杠星注释，标记遇到斜杠星注释
+                                        // 查找斜杠星注释结束符索引位置
+                                        slashStarTailIndex = lines.indexOf(
+                                            str = "*/",
+                                            startRowIndex = lineIndex
+                                        )
+                                        return@symbolType
+                                    }
+
+                                    if (binaryOperatorMatch[0] == WordTypeEnum.SLASH_SLASH) {
+                                        // 当前 ”双目运算符“ 是双斜杠注释，标记遇到双斜杠注释
+                                        meetDoubleSlashNote = true
+                                        return@symbolType
+                                    }
+
+                                    // 将匹配成功的双目运算符加入结果集
+                                    resultWordType.add(binaryOperatorMatch[0].wordType)
+                                    return@symbolType
+                                } else {
+                                    // 匹配失败，正常将匹配到的单目运算符加入结果集
+
+                                }
                             }
+
+                            // 根据当前运算符获取到对应的 WordType
+                            val operators = getOperators().match {
+                                it.wordType.word == operator.toString()
+                            }
+                            // 写入结果集
+                            resultWordType.add(operators[0].wordType)
 
                             // 清空缓冲区
                             buffer.clear()
@@ -218,7 +287,6 @@ fun match(lines: List<String>) {
     resultWordType.forEach {
         resultStr.append("$it\n")
     }
-
 
     // 打印解析结果
     println("$resultStr\n解析结果已经保存到 ." + File.separator + "analysis_result.txt")

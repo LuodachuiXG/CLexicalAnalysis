@@ -70,7 +70,15 @@ enum class WordTypeEnum(val wordType: WordType) {
     EQUAL(WordType(219, "=")),
     POINT(WordType(220, ".")),
     PARALLEL(WordType(221, "|")),
-    AND(WordType(222, "&"))
+    AND(WordType(222, "&")),
+
+
+    /**
+     * 注释（自定义种别码，用于识别注释）
+     * code 跟随在运算符后，看作运算符，方便处理
+     */
+    SLASH_STAR(WordType(223, "/*")),
+    SLASH_SLASH(WordType(224, "//"))
 }
 
 /**
@@ -91,7 +99,7 @@ fun WordTypeEnum.isBoundary(): Boolean {
  * 当前单词种别枚举类是否是运算符
  */
 fun WordTypeEnum.isOperator(): Boolean {
-    return this.wordType.code in (201..222)
+    return this.wordType.code in (201..224)
 }
 
 /**

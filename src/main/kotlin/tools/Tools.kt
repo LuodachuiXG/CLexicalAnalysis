@@ -1,5 +1,6 @@
 package tools
 
+import entity.StringIndex
 import entity.WordType
 import enum.*
 import java.lang.Exception
@@ -49,7 +50,7 @@ fun String.getWordType(): WordType? {
         this.isStringFormat() -> {
             // 字符串单词种别码，用来获取字符串的编码
             val stringWorkType = WordTypeEnum.STRING.wordType
-            WordType(stringWorkType.code, this.substring(1, this.length - 1))
+            WordType(stringWorkType.code, this.substring(1, this.lastIndex))
         }
         this == "" -> {
             null
@@ -124,7 +125,7 @@ fun String.isCharFormat(): Boolean {
  */
 fun String.isStringFormat(): Boolean {
     // 此处未来可能添加代码异常，因为字符串应该有两个双引号
-    return this.startsWith("\"") && this.endsWith("\"") && this.length > 2
+    return this.startsWith("\"") && this.endsWith("\"") && this.length >= 2
 }
 
 /**
@@ -179,3 +180,26 @@ fun List<WordTypeEnum>.match(
 fun StringBuffer.clear() {
     this.setLength(0)
 }
+
+
+/**
+ * 检索一个字符串在按行分割的集合中的行列索引
+ * @param str 要检索的文字
+ * @param startRowIndex 开始检索的行索引
+ * @return 找到文字返回包含行和列索引的 [StringIndex] 对象，否则返回行列均为 -1 的 [StringIndex] 对象
+ */
+fun List<String>.indexOf(
+    str: String,
+    startRowIndex: Int
+): StringIndex {
+    for (lineIndex in startRowIndex..< this.lastIndex) {
+        val line = this[lineIndex]
+        val columnIndex = line.indexOf(str)
+        if (columnIndex != -1) {
+            return StringIndex(lineIndex, columnIndex)
+        }
+    }
+    return StringIndex()
+}
+
+
