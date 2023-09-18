@@ -11,15 +11,15 @@ import java.io.File
 import java.lang.Exception
 
 fun main(args: Array<String>) {
-    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\test02.c")
+//    val mArgs = arrayOf("C:\\Users\\16965\\Desktop\\test02.c")
     // 首先判断是否传入参数
-    if (mArgs.isEmpty()) {
+    if (args.isEmpty()) {
         println("[.c 文件路径]：对 C 进行词法分析")
         return
     }
 
     // 参数是否错误
-    if (mArgs.size > 1) {
+    if (args.size > 1) {
         "参数长度错误".error()
         return
     }
@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
 
     // 验证文件是否存在
     try {
-        file = File(mArgs[0])
+        file = File(args[0])
         if (!file.exists() || !file.isFile) {
             // 文件不存在
             "文件不存在，请检查文件路径".error()

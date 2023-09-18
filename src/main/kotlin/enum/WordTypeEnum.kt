@@ -71,6 +71,8 @@ enum class WordTypeEnum(val wordType: WordType) {
     POINT(WordType(220, ".")),
     PARALLEL(WordType(221, "|")),
     AND(WordType(222, "&")),
+    PLUS_PLUS(WordType(225,"++")),
+    MINUS_MINUS(WordType(226, "--")),
 
 
     /**
@@ -99,7 +101,7 @@ fun WordTypeEnum.isBoundary(): Boolean {
  * 当前单词种别枚举类是否是运算符
  */
 fun WordTypeEnum.isOperator(): Boolean {
-    return this.wordType.code in (201..224)
+    return this.wordType.code in (201..226)
 }
 
 /**
