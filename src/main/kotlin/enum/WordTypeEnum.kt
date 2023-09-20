@@ -84,24 +84,73 @@ enum class WordTypeEnum(val wordType: WordType) {
 }
 
 /**
+ * 当前单词种别是否是整数
+ */
+fun WordType.isInteger(): Boolean {
+    return this.code == WordTypeEnum.INTEGER.wordType.code
+}
+
+/**
+ * 当前单词种别是否是字符串
+ */
+fun WordType.isString(): Boolean {
+    return this.code == WordTypeEnum.STRING.wordType.code
+}
+
+/**
+ * 当前单词种别是否是标识符
+ */
+fun WordType.isIdentifier(): Boolean {
+    return this.code == WordTypeEnum.IDENTIFIER.wordType.code
+}
+
+/**
+ * 当前单词种别是否是实数
+ */
+fun WordType.isRealNumber(): Boolean {
+    return this.code == WordTypeEnum.REAL_NUMBER.wordType.code
+}
+
+/**
+ * 当前单词种别是否是关键字
+ */
+fun WordType.isKey(): Boolean {
+    return this.code in (101..113)
+}
+
+/**
+ * 当前单词种别是否是界符
+ */
+fun WordType.isBoundary(): Boolean {
+    return this.code in (301..304)
+}
+
+/**
+ * 当前单词种别是否是运算符
+ */
+fun WordType.isOperator(): Boolean {
+    return this.code in (201..226)
+}
+
+/**
  * 当前单词种别枚举类是否是关键字
  */
 fun WordTypeEnum.isKey(): Boolean {
-    return this.wordType.code in (101..113)
+    return this.wordType.isKey()
 }
 
 /**
  * 当前单词种别枚举类是否是界符
  */
 fun WordTypeEnum.isBoundary(): Boolean {
-    return this.wordType.code in (301..304)
+    return this.wordType.isBoundary()
 }
 
 /**
  * 当前单词种别枚举类是否是运算符
  */
 fun WordTypeEnum.isOperator(): Boolean {
-    return this.wordType.code in (201..226)
+    return this.wordType.isOperator()
 }
 
 /**

@@ -3,6 +3,7 @@ package tools
 import entity.StringIndex
 import entity.WordType
 import enum.*
+import exceptions.AnalysisException
 import java.lang.Exception
 
 /**
@@ -200,6 +201,24 @@ fun List<String>.indexOf(
         }
     }
     return StringIndex()
+}
+
+
+/**
+ *  给 WordType 结果集添加数据并同时检查代码是否存在错误
+ *  @param wordType 要添加的 [WordType]
+ *  @throws [AnalysisException] 代码分析异常
+ */
+fun ArrayList<WordType>.addE(wordType: WordType) {
+    when {
+        // 当前单词种别码是标识符
+        wordType.isIdentifier() -> {
+            if (wordType.word[0].isDigit()) {
+                throw AnalysisException("标识符不能以数字开头开头")
+            }
+        }
+    }
+    this.add(wordType)
 }
 
 
